@@ -869,6 +869,8 @@ class PlayGame extends Phaser.Scene {
         this.monster.setVisible(false);
         this.hpBarBackground.setVisible(false);
         this.hpBar.setVisible(false);
+        const rewardGold = 30;
+        this.gainGold(rewardGold);
         this.handleVictory();
     }
 
