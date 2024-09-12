@@ -8,6 +8,8 @@ interface Event1Props {
     gold: number;
     setGold: React.Dispatch<React.SetStateAction<number>>;
     onSceneChange: (scene: string) => void;
+    maxPlayerHP: number;
+    setmaxPlayerHP: React.Dispatch<React.SetStateAction<number>>;
 }
 
 interface Choice {
@@ -194,7 +196,6 @@ class EventScene extends Phaser.Scene {
                         choice.reward.gold
                     )}. New total: ${this.currentGold}`
                 );
-                //rewardApplied = true;
             }
             if (choice.reward.hp !== undefined) {
                 this.currentPlayerHP = Math.max(0, Math.min(this.currentPlayerHP + choice.reward.hp, this.maxPlayerHP));
@@ -204,7 +205,6 @@ class EventScene extends Phaser.Scene {
                         choice.reward.hp
                     )}. New total: ${this.currentPlayerHP}`
                 );
-                // rewardApplied = true;
             }
         }
 
@@ -264,7 +264,7 @@ class EventScene extends Phaser.Scene {
     }
 }
 
-const Event1: React.FC<Event1Props> = ({ playerHP, setPlayerHP, gold, setGold, onSceneChange }) => {
+const Event1: React.FC<Event1Props> = ({ playerHP, setPlayerHP, gold, setGold, onSceneChange, maxPlayerHP }) => {
     const gameContainer = useRef<HTMLDivElement>(null);
     const [game, setGame] = useState<Phaser.Game | null>(null);
 
@@ -272,8 +272,10 @@ const Event1: React.FC<Event1Props> = ({ playerHP, setPlayerHP, gold, setGold, o
         if (!gameContainer.current) return;
 
         const updateGameState = (state: { playerHP?: number; gold?: number }) => {
-            if (state.playerHP !== undefined) setPlayerHP((prev) => Math.max(0, prev + playerHP));
-            if (state.gold !== undefined) setGold((prev) => Math.max(0, prev + gold));
+            if (typeof state.playerHP === 'number') {
+                setPlayerHP((prev) => Math.max(0, Math.min(prev + state.playerHP!, maxPlayerHP)));
+            }
+            if (typeof state.gold === 'number') setGold((prev) => Math.max(0, prev + state.gold!));
         };
 
         const config: Phaser.Types.Core.GameConfig = {

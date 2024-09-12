@@ -194,8 +194,6 @@ class PlayGame extends Phaser.Scene {
 
         this.input.on('drop', (pointer: Phaser.Input.Pointer, card: Phaser.GameObjects.Sprite) => {
             if (card.getData('cost') <= this.currentCost) {
-                this.currentCost -= card.getData('cost');
-                this.updateCostText();
                 this.handleCardEffect(card);
 
                 card.setDepth(0);
@@ -223,24 +221,6 @@ class PlayGame extends Phaser.Scene {
                             onComplete: function (this: PlayGame) {
                                 card.setVisible(false);
                                 this.monster.setTint(0xff0000);
-
-                                const damageText = this.add
-                                    .text(this.monster.x, this.monster.y - 150, `-${card.getData('damage')}`, {
-                                        font: '64px Arial',
-                                        color: '#FFFFFF',
-                                    })
-                                    .setOrigin(0.5, 0.5);
-
-                                this.tweens.add({
-                                    targets: damageText,
-                                    y: this.monster.y - 200,
-                                    alpha: 0,
-                                    duration: 800,
-                                    ease: 'Power2',
-                                    onComplete: function () {
-                                        damageText.destroy();
-                                    },
-                                });
 
                                 if (this.monster.getData('currentHP') < 0) {
                                     this.monster.setData('currentHP', 0);
@@ -435,9 +415,10 @@ class PlayGame extends Phaser.Scene {
 
         card.setData('damage', cardData.damage || 0);
         card.setData('cost', cardData.cost || 0);
+        card.setData('extraCost', cardData.extraCost || 0);
         card.setData('healAmount', cardData.healAmount || 0);
         card.setData('goldAmount', cardData.goldAmount || 0);
-        card.setData('extraCost', cardData.extraCost || 0);
+        card.setData('baseDamage', Number(cardData.baseDamage) || 0);
         card.setData('extraDamage', cardData.extraDamage || 0);
         card.setData('type', cardData.type);
 
@@ -775,14 +756,21 @@ class PlayGame extends Phaser.Scene {
     handleCardEffect(card: Phaser.GameObjects.Sprite) {
         console.log('handleCardEffect called for card:', card);
         console.log('Card type:', card.getData('type'));
+        const cardCost = Number(card.getData('cost')) || 0;
         switch (card.getData('type')) {
             case 'attack':
+                this.currentCost -= cardCost;
+                this.updateCostText();
                 this.dealDamage(card.getData('damage'));
                 break;
             case 'heal':
+                this.currentCost -= cardCost;
+                this.updateCostText();
                 this.healPlayer(card.getData('healAmount'));
                 break;
             case 'gold':
+                this.currentCost -= cardCost;
+                this.updateCostText();
                 console.log('Gold card used, calling gainGold');
                 this.gainGold(card.getData('goldAmount'));
                 break;
@@ -795,29 +783,32 @@ class PlayGame extends Phaser.Scene {
     }
 
     handleEnhancedAttack(card: Phaser.GameObjects.Sprite) {
+        console.log('Current cost before enhanced attack:', this.currentCost);
         if (card.getData('type') === 'enhanced_attack') {
-            const baseCost = card.getData('cost');
-            const extraCost = card.getData('extraCost');
-            const baseDamage = card.getData('baseDamage');
-            const extraDamage = card.getData('extraDamage');
-
-            // 기본 공격 비용을 먼저 지불
-            this.currentCost -= baseCost;
+            const baseCost = Number(card.getData('cost')) || 0;
+            const extraCost = Number(card.getData('extraCost')) || 0;
+            const baseDamage = Number(card.getData('baseDamage')) || 0;
+            const extraDamage = Number(card.getData('extraDamage')) || 0;
 
             let totalDamage = baseDamage;
+            let totalCost = baseCost;
 
             // extraCost를 지불할 수 있는지 확인
-            if (this.currentCost >= extraCost) {
-                this.currentCost -= extraCost;
+            if (this.currentCost >= baseCost + extraCost) {
                 totalDamage += extraDamage;
-                console.log(`Enhanced attack! Dealing ${totalDamage} damage (${baseDamage} + ${extraDamage})`);
+                totalCost += extraCost;
+                console.log(
+                    `Enhanced attack! Dealing ${totalDamage} damage (${baseDamage} + ${extraDamage}) Cost (${baseCost} + ${extraCost})`
+                );
+            } else if (this.currentCost >= baseCost) {
             } else {
-                console.log(`Basic attack. Dealing ${baseDamage} damage. Not enough cost for enhancement.`);
+                this.showCostWarning();
+                return;
             }
 
+            this.currentCost -= totalCost;
             this.dealDamage(totalDamage);
             this.updateCostText();
-
             // 여기에 몬스터 HP 체크 로직 추가
             if (this.monster.getData('currentHP') <= 0) {
                 this.handleMonsterDefeat();
@@ -836,7 +827,7 @@ class PlayGame extends Phaser.Scene {
     dealDamage = (amount: number): void => {
         console.log('Dealing damage:', amount);
 
-        const currentHP = this.monster.getData('currentHP') as number;
+        const currentHP = Number(this.monster.getData('currentHP')) || 0;
         const newHP = Math.max(currentHP - amount, 0);
         this.monster.setData('currentHP', newHP);
 

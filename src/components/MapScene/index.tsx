@@ -12,6 +12,7 @@ interface MapSceneProps {
     completedEvents: Record<string, boolean>;
     setCompletedEvents: Dispatch<SetStateAction<Record<string, boolean>>>;
 }
+
 interface EventPoint {
     x: number;
     y: number;
@@ -23,6 +24,7 @@ interface EventPoint {
 
 function MapScene({ onSceneChange, playerHP, gold, completedEvents, setCompletedEvents }: MapSceneProps): JSX.Element {
     const gameContainer = useRef<HTMLDivElement>(null);
+    const gameRef = useRef<Phaser.Game | null>(null);
 
     useEffect(() => {
         if (!gameContainer.current) return;
@@ -30,7 +32,6 @@ function MapScene({ onSceneChange, playerHP, gold, completedEvents, setCompleted
         const eventPoints: EventPoint[] = [
             { x: 780, y: 270, scale: 3, color: 0xffff33, eventKey: 'event1', sceneName: 'event1' },
             // 추가 이벤트 포인트를 여기에 추가할 수 있습니다.
-            // 예: { x: 500, y: 500, scale: 3, color: 0x00ff00, eventKey: 'event2', sceneName: 'event2' },
         ];
 
         const config: Phaser.Types.Core.GameConfig = {
@@ -83,26 +84,34 @@ function MapScene({ onSceneChange, playerHP, gold, completedEvents, setCompleted
                             });
                         }
                     });
-                    // playerHP와 gold 정보를 화면에 표시 (예시)
-                    this.add.text(10, 10, `HP: ${playerHP}`, { fontSize: '24px', color: '#ffffff' });
-                    this.add.text(10, 40, `Gold: ${gold}`, { fontSize: '24px', color: '#ffffff' });
-                },
-                update: function (this: Phaser.Scene) {
-                    // HP와 Gold 텍스트 업데이트
-                    const hpText = this.children.getByName('hpText') as Phaser.GameObjects.Text;
-                    const goldText = this.children.getByName('goldText') as Phaser.GameObjects.Text;
-                    if (hpText) hpText.setText(`HP: ${playerHP}`);
-                    if (goldText) goldText.setText(`Gold: ${gold}`);
+
+                    // playerHP와 gold 정보를 화면에 표시
+                    this.add.text(10, 10, `HP: ${playerHP}`, { fontSize: '24px', color: '#ffffff' }).setName('hpText');
+                    this.add.text(10, 40, `Gold: ${gold}`, { fontSize: '24px', color: '#ffffff' }).setName('goldText');
                 },
             },
         };
 
-        const game = new Phaser.Game(config);
+        gameRef.current = new Phaser.Game(config);
 
         return () => {
-            game.destroy(true);
+            if (gameRef.current) {
+                gameRef.current.destroy(true);
+            }
         };
-    }, [onSceneChange, playerHP, gold]);
+    }, [onSceneChange, completedEvents, setCompletedEvents]);
+
+    useEffect(() => {
+        if (gameRef.current) {
+            const scene = gameRef.current.scene.getScene('default') as Phaser.Scene;
+            if (scene) {
+                const hpText = scene.children.getByName('hpText') as Phaser.GameObjects.Text;
+                const goldText = scene.children.getByName('goldText') as Phaser.GameObjects.Text;
+                if (hpText) hpText.setText(`HP: ${playerHP}`);
+                if (goldText) goldText.setText(`Gold: ${gold}`);
+            }
+        }
+    }, [playerHP, gold]);
 
     return <div ref={gameContainer} style={{ width: 1280, height: 740 }} />;
 }

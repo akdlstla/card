@@ -8,6 +8,7 @@ const Event1 = dynamic(() => import('@/components/Event1'), { ssr: false });
 
 export default function Home() {
     const [currentScene, setCurrentScene] = useState('map');
+    const [maxPlayerHP, setmaxPlayerHP] = useState(50);
     const [playerHP, setPlayerHP] = useState(50);
     const [gold, setGold] = useState(0);
     const [completedEvents, setCompletedEvents] = useState<Record<string, boolean>>({});
@@ -45,6 +46,7 @@ export default function Home() {
                     setPlayerHP={setPlayerHP}
                     gold={gold}
                     setGold={setGold}
+                    maxPlayerHP={maxPlayerHP}
                 />
             )}
             {currentScene === 'event1' && (
@@ -54,6 +56,8 @@ export default function Home() {
                     setPlayerHP={setPlayerHP}
                     gold={gold}
                     setGold={setGold}
+                    maxPlayerHP={maxPlayerHP}
+                    setmaxPlayerHP={setmaxPlayerHP}
                 />
             )}
         </>

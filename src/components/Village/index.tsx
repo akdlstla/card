@@ -16,6 +16,7 @@ interface VillageProps {
     setPlayerHP: React.Dispatch<React.SetStateAction<number>>;
     gold: number;
     setGold: React.Dispatch<React.SetStateAction<number>>;
+    maxPlayerHP: number;
 }
 interface DialogueOption {
     text: string;
@@ -35,7 +36,7 @@ interface Weapon {
     price: number;
 }
 
-const Village: React.FC<VillageProps> = ({ onSceneChange, playerHP, setPlayerHP, gold, setGold }) => {
+const Village: React.FC<VillageProps> = ({ onSceneChange, playerHP, setPlayerHP, gold, setGold, maxPlayerHP }) => {
     const gameContainer = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -47,7 +48,7 @@ const Village: React.FC<VillageProps> = ({ onSceneChange, playerHP, setPlayerHP,
             private hpText!: Phaser.GameObjects.Text;
             private goldValue: number;
             private hpValue: number;
-            private maxHP: number = 100; // 최대 체력 설정
+            private maxPlayerHP: number; // 최대 체력 설정
 
             constructor() {
                 super({ key: 'Village' });
@@ -55,6 +56,7 @@ const Village: React.FC<VillageProps> = ({ onSceneChange, playerHP, setPlayerHP,
                 this.dialogueGroup = {} as Phaser.GameObjects.Group;
                 this.goldValue = gold;
                 this.hpValue = playerHP;
+                this.maxPlayerHP = maxPlayerHP;
             }
 
             preload() {
@@ -191,7 +193,7 @@ const Village: React.FC<VillageProps> = ({ onSceneChange, playerHP, setPlayerHP,
                             showDialogue(currentDialogue.next as string);
                         });
 
-                        const clickPrompt = this.add.text(1200, 700, '클릭하여 계속', {
+                        const clickPrompt = this.add.text(1100, 700, '클릭하여 계속', {
                             font: '20px Arial',
                             color: '#ffcc00',
                         });
@@ -389,7 +391,7 @@ const Village: React.FC<VillageProps> = ({ onSceneChange, playerHP, setPlayerHP,
                             showDialogue(currentDialogue.next as string);
                         });
 
-                        const clickPrompt = this.add.text(1200, 700, '클릭하여 계속', {
+                        const clickPrompt = this.add.text(1100, 700, '클릭하여 계속', {
                             font: '20px Arial',
                             color: '#ffcc00',
                         });
@@ -450,7 +452,7 @@ const Village: React.FC<VillageProps> = ({ onSceneChange, playerHP, setPlayerHP,
                 if (this.goldValue >= restCost) {
                     // 골드가 충분한 경우
                     this.goldValue -= restCost;
-                    this.hpValue = this.maxHP; // 체력을 최대로 회복
+                    this.hpValue = this.maxPlayerHP; // 체력을 최대로 회복
                     setGold(this.goldValue);
                     setPlayerHP(this.hpValue);
 
@@ -666,7 +668,7 @@ const Village: React.FC<VillageProps> = ({ onSceneChange, playerHP, setPlayerHP,
                         });
 
                         // 클릭 가능함을 나타내는 텍스트 추가
-                        const clickPrompt = this.add.text(1200, 700, '클릭하여 계속', {
+                        const clickPrompt = this.add.text(1100, 700, '클릭하여 계속', {
                             font: '20px Arial',
                             color: '#ffcc00',
                         });
@@ -787,7 +789,7 @@ const Village: React.FC<VillageProps> = ({ onSceneChange, playerHP, setPlayerHP,
                             showDialogue(currentDialogue.next as string);
                         });
 
-                        const clickPrompt = this.add.text(1200, 700, '클릭하여 계속', {
+                        const clickPrompt = this.add.text(1100, 700, '클릭하여 계속', {
                             font: '20px Arial',
                             color: '#ffcc00',
                         });
@@ -874,7 +876,7 @@ const Village: React.FC<VillageProps> = ({ onSceneChange, playerHP, setPlayerHP,
                             showDialogue(currentDialogue.next as string);
                         });
 
-                        const clickPrompt = this.add.text(1200, 700, '클릭하여 계속', {
+                        const clickPrompt = this.add.text(1100, 700, '클릭하여 계속', {
                             font: '20px Arial',
                             color: '#ffcc00',
                         });
