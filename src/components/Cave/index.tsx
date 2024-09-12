@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
-import background from '../../../public/images/background.jpg';
-import monster from '../../../public/images/monster.png';
+import background from '../../../public/images/caveBackground.jpg';
+import monster from '../../../public/images/spider.png';
 import wound from '../../../public/images/wound.png';
 import cards from '../../../public/images/cards.png';
 import victory from '../../../public/images/victory.png';
@@ -19,7 +19,7 @@ interface Card {
     extraDamage?: number;
 }
 
-interface Card2Props {
+interface CaveProps {
     playerHP: number;
     gold: number;
     setPlayerHP: (hp: number) => void;
@@ -28,7 +28,7 @@ interface Card2Props {
 }
 
 class PlayGame extends Phaser.Scene {
-    private initialProps: Card2Props;
+    private initialProps: CaveProps;
     private maxCostPerTurn: number = 20;
     private currentCost: number = this.maxCostPerTurn;
     private isPlayerAlive: boolean = true;
@@ -62,9 +62,12 @@ class PlayGame extends Phaser.Scene {
     private zone!: Phaser.GameObjects.Zone;
     private dimmedOverlay!: Phaser.GameObjects.Graphics;
     private gameOverText!: Phaser.GameObjects.Text;
-    private props!: Card2Props;
+    private props!: CaveProps;
+    private isPoisoned: boolean = false;
+    private poisonTurnsLeft: number = 0;
+    private poisonOverlay!: Phaser.GameObjects.Rectangle;
 
-    constructor(props: Card2Props) {
+    constructor(props: CaveProps) {
         super('PlayGame');
         this.maxPlayerHP = 0;
         this.currentPlayerHP = 0;
@@ -117,7 +120,7 @@ class PlayGame extends Phaser.Scene {
         ];
     }
 
-    init(data: Card2Props) {
+    init(data: CaveProps) {
         this.initialProps = data;
         this.props = data;
         if (this.maxPlayerHP === 0) {
@@ -282,7 +285,7 @@ class PlayGame extends Phaser.Scene {
 
         this.monster = this.add.image(640, 420, 'monster');
         this.monster.setScale(1.3);
-        this.monster.setData('maxHP', 100);
+        this.monster.setData('maxHP', 120);
         this.monster.setData('currentHP', this.monster.getData('maxHP'));
 
         if (this.initialProps) {
@@ -372,6 +375,19 @@ class PlayGame extends Phaser.Scene {
                 window.location.reload();
             }
         });
+
+        // create 메서드에서 초기화
+        this.poisonOverlay = this.add.rectangle(
+            0,
+            0,
+            this.sys.game.config.width as number,
+            this.sys.game.config.height as number,
+            0x00ff00,
+            0.2
+        );
+        this.poisonOverlay.setOrigin(0);
+        this.poisonOverlay.setDepth(1000); // 다른 요소들 위에 표시되도록 높은 depth 값 설정
+        this.poisonOverlay.setVisible(false);
 
         this.dimmedOverlay = this.add.graphics();
         this.dimmedOverlay.fillStyle(0x000000, 0.7);
@@ -560,6 +576,28 @@ class PlayGame extends Phaser.Scene {
 
     startTurn() {
         this.currentCost = this.maxCostPerTurn;
+        if (this.isPoisoned) {
+            const poisonDamage = 5;
+            this.currentPlayerHP = Math.max(this.currentPlayerHP - poisonDamage, 0);
+            this.initialProps.setPlayerHP(this.currentPlayerHP);
+            console.log(`독 데미지 ${poisonDamage}를 받았습니다. 현재 HP: ${this.currentPlayerHP}`);
+
+            this.poisonTurnsLeft--;
+            if (this.poisonTurnsLeft <= 0) {
+                this.isPoisoned = false;
+                console.log('독 효과가 사라졌습니다.');
+                // 독 효과 시각적 표시 제거
+                // this.player.clearTint();
+            }
+
+            this.drawPlayerHPBar();
+            this.updateHPText();
+
+            if (this.currentPlayerHP <= 0) {
+                this.handlePlayerDeath();
+                return;
+            }
+        }
     }
 
     endTurn() {
@@ -662,7 +700,17 @@ class PlayGame extends Phaser.Scene {
         });
         this.cameras.main.shake(300, 0.2);
 
-        const damage = Phaser.Math.Between(15, 20);
+        let damage = 0;
+
+        if (Phaser.Math.Between(1, 100) <= 25) {
+            this.isPoisoned = true;
+            this.poisonTurnsLeft = 3;
+            console.log('플레이어가 독에 걸렸습니다.');
+            // 독 상태일 때 표시
+            this.poisonOverlay.setVisible(this.isPoisoned);
+        } else {
+            damage = damage = Phaser.Math.Between(20, 25);
+        }
         this.currentPlayerHP = Math.max(this.currentPlayerHP - damage, 0);
         this.initialProps.setPlayerHP(this.currentPlayerHP);
 
@@ -860,15 +908,16 @@ class PlayGame extends Phaser.Scene {
         this.currentGold += amount;
         this.updateGoldText();
     }
-    update(): void {
+    update() {
         if (!this.isPlayerAlive) {
             return;
         }
+
         // 추가적인 업데이트 로직이 필요한 경우 여기에 구현
     }
 }
 
-const Card2: React.FC<Card2Props> = (props) => {
+const Cave: React.FC<CaveProps> = (props) => {
     const gameContainer = useRef<HTMLDivElement>(null);
     const gameInstanceRef = useRef<Phaser.Game | null>(null);
 
@@ -931,4 +980,4 @@ const Card2: React.FC<Card2Props> = (props) => {
     return <div ref={gameContainer} style={{ width: 1280, height: 740 }} />;
 };
 
-export default Card2;
+export default Cave;

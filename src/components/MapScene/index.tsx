@@ -62,6 +62,17 @@ function MapScene({ onSceneChange, playerHP, gold, completedEvents, setCompleted
                         });
                     });
 
+                    const battlePoint2 = this.add
+                        .circle(750, 580, 70, 0xff0000, 0.5)
+                        .setInteractive({ useHandCursor: true });
+                    battlePoint2.on('pointerdown', () => {
+                        this.cameras.main.fadeOut(500, 0, 0, 0);
+
+                        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+                            onSceneChange('cave');
+                        });
+                    });
+
                     // 마을 이벤트 지점
                     const villagePoint = this.add
                         .circle(370, 280, 50, 0xffffff, 0.5)

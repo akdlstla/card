@@ -5,6 +5,7 @@ const MapScene = dynamic(() => import('@/components/MapScene'), { ssr: false });
 const Card2 = dynamic(() => import('@/components/Card2'), { ssr: false });
 const Village = dynamic(() => import('@/components/Village'), { ssr: false });
 const Event1 = dynamic(() => import('@/components/Event1'), { ssr: false });
+const Cave = dynamic(() => import('@/components/Cave'), { ssr: false });
 
 export default function Home() {
     const [currentScene, setCurrentScene] = useState('map');
@@ -32,6 +33,15 @@ export default function Home() {
             )}
             {currentScene === 'cardGame' && (
                 <Card2
+                    onSceneChange={handleSceneChange}
+                    playerHP={playerHP}
+                    setPlayerHP={setPlayerHP}
+                    gold={gold}
+                    setGold={setGold}
+                />
+            )}
+            {currentScene === 'cave' && (
+                <Cave
                     onSceneChange={handleSceneChange}
                     playerHP={playerHP}
                     setPlayerHP={setPlayerHP}
