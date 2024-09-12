@@ -32,7 +32,7 @@ class PlayGame extends Phaser.Scene {
     private maxCostPerTurn: number = 20;
     private currentCost: number = this.maxCostPerTurn;
     private isPlayerAlive: boolean = true;
-    private cards: Card[] = []; // Consider creating a proper type for cards
+    private cards: Card[] = [];
     private gameOptions = {
         totalCards: 20,
         cardsInHand: 6,
@@ -40,7 +40,7 @@ class PlayGame extends Phaser.Scene {
         cardHeight: 400,
         handSizeRatio: 0.5,
         boardSizeRatio: 0.3,
-    }; // Consider creating a proper type for gameOptions
+    };
     private currentPlayerHP!: number;
     private maxPlayerHP!: number;
     private currentGold!: number;
@@ -70,24 +70,24 @@ class PlayGame extends Phaser.Scene {
         this.currentPlayerHP = 0;
         this.initialProps = props;
         this.cards = [
-            { id: 0, type: 'attack', name: '기본 공격 1', damage: 5, cost: 1 },
-            { id: 1, type: 'attack', name: '기본 공격 2', damage: 5, cost: 1 },
-            { id: 2, type: 'attack', name: '강력한 공격', damage: 8, cost: 2 },
-            { id: 3, type: 'heal', name: '치료', healAmount: 10, cost: 2 },
-            { id: 4, type: 'gold', name: '돈 획득', goldAmount: 1, cost: 0 },
+            { id: 0, type: 'attack', name: '기본 공격 1', damage: 5, cost: 3 },
+            { id: 1, type: 'attack', name: '기본 공격 2', damage: 5, cost: 3 },
+            { id: 2, type: 'attack', name: '강력한 공격', damage: 8, cost: 5 },
+            { id: 3, type: 'heal', name: '치료', healAmount: 10, cost: 4 },
+            { id: 4, type: 'gold', name: '돈 획득', goldAmount: 1, cost: 2 },
             {
                 id: 5,
                 type: 'enhanced_attack',
                 name: '강화된 공격',
                 baseDamage: 8,
-                extraCost: 3,
+                extraCost: 2,
                 extraDamage: 5,
-                cost: 2,
+                cost: 5,
             },
-            { id: 6, type: 'attack', name: '화염 공격', damage: 12, cost: 3 },
-            { id: 7, type: 'heal', name: '대규모 치료', healAmount: 20, cost: 4 },
-            { id: 8, type: 'gold', name: '대량 금 획득', goldAmount: 3, cost: 2 },
-            { id: 9, type: 'attack', name: '냉기 공격', damage: 10, cost: 2 },
+            { id: 6, type: 'attack', name: '화염 공격', damage: 12, cost: 7 },
+            { id: 7, type: 'heal', name: '대규모 치료', healAmount: 20, cost: 6 },
+            { id: 8, type: 'gold', name: '대량 금 획득', goldAmount: 3, cost: 5 },
+            { id: 9, type: 'attack', name: '냉기 공격', damage: 10, cost: 7 },
             {
                 id: 10,
                 type: 'enhanced_attack',
@@ -95,25 +95,25 @@ class PlayGame extends Phaser.Scene {
                 baseDamage: 15,
                 extraCost: 5,
                 extraDamage: 10,
-                cost: 3,
+                cost: 6,
             },
             { id: 11, type: 'attack', name: '단검 공격', damage: 3, cost: 1 },
             { id: 12, type: 'heal', name: '응급 치료', healAmount: 5, cost: 1 },
-            { id: 13, type: 'gold', name: '소량 금 획득', goldAmount: 2, cost: 1 },
-            { id: 14, type: 'attack', name: '독 공격', damage: 7, cost: 2 },
+            { id: 13, type: 'gold', name: '소량 금 획득', goldAmount: 2, cost: 3 },
+            { id: 14, type: 'attack', name: '독 공격', damage: 7, cost: 4 },
             {
                 id: 15,
                 type: 'enhanced_attack',
                 name: '폭발 공격',
                 baseDamage: 12,
-                extraCost: 4,
+                extraCost: 2,
                 extraDamage: 6,
-                cost: 2,
+                cost: 6,
             },
-            { id: 16, type: 'attack', name: '암흑 공격', damage: 9, cost: 3 },
-            { id: 17, type: 'heal', name: '신속 치료', healAmount: 15, cost: 3 },
-            { id: 18, type: 'gold', name: '무작위 금 획득', goldAmount: 1, cost: 1 },
-            { id: 19, type: 'attack', name: '마법 공격', damage: 11, cost: 3 },
+            { id: 16, type: 'attack', name: '암흑 공격', damage: 9, cost: 5 },
+            { id: 17, type: 'heal', name: '신속 치료', healAmount: 15, cost: 4 },
+            { id: 18, type: 'gold', name: '무작위 금 획득', goldAmount: 1, cost: 2 },
+            { id: 19, type: 'attack', name: '마법 공격', damage: 11, cost: 5 },
         ];
     }
 
@@ -302,7 +302,7 @@ class PlayGame extends Phaser.Scene {
 
         this.monster = this.add.image(640, 350, 'monster');
         this.monster.setScale(0.45);
-        this.monster.setData('maxHP', 10);
+        this.monster.setData('maxHP', 100);
         this.monster.setData('currentHP', this.monster.getData('maxHP'));
 
         if (this.initialProps) {
@@ -817,14 +817,28 @@ class PlayGame extends Phaser.Scene {
 
             this.dealDamage(totalDamage);
             this.updateCostText();
+
+            // 여기에 몬스터 HP 체크 로직 추가
+            if (this.monster.getData('currentHP') <= 0) {
+                this.handleMonsterDefeat();
+            }
         }
+    }
+
+    // 새로운 메서드 추가
+    handleMonsterDefeat() {
+        this.monster.setVisible(false);
+        this.hpBarBackground.setVisible(false);
+        this.hpBar.setVisible(false);
+        this.handleVictory();
     }
 
     dealDamage = (amount: number): void => {
         console.log('Dealing damage:', amount);
 
         const currentHP = this.monster.getData('currentHP') as number;
-        this.monster.setData('currentHP', Math.max(currentHP - amount, 0));
+        const newHP = Math.max(currentHP - amount, 0);
+        this.monster.setData('currentHP', newHP);
 
         const damageText = this.add
             .text(this.monster.x, this.monster.y - 150, `-${amount}`, {
@@ -845,12 +859,8 @@ class PlayGame extends Phaser.Scene {
         });
 
         this.drawHPBar();
-
-        if (this.monster.getData('currentHP') <= 0) {
-            this.monster.setVisible(false);
-            this.hpBarBackground.setVisible(false);
-            this.hpBar.setVisible(false);
-            this.handleVictory();
+        if (newHP <= 0) {
+            this.handleMonsterDefeat();
         }
     };
     gainGold(amount: number): void {
