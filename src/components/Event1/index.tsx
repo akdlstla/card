@@ -182,7 +182,7 @@ class EventScene extends Phaser.Scene {
             return;
         }
 
-        let rewardApplied = false;
+        //let rewardApplied = false;
 
         if (choice.reward) {
             console.log('Applying reward:', choice.reward);
